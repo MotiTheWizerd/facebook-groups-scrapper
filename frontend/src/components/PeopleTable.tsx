@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import { ClipboardList, Download, ExternalLink, Search, Users } from "lucide-react";
 import { Person } from "../api";
 
 const AV_COLORS = [
@@ -19,24 +21,33 @@ function avatarFor(name: string) {
 function Avatar({ person }: { person: Person }) {
   const av = avatarFor(person.name);
   const [broken, setBroken] = useState(false);
-  if (person.avatar_url && !broken) {
-    return (
-      <img
-        className="avatar"
-        src={person.avatar_url}
-        alt={person.name}
-        loading="lazy"
-        referrerPolicy="no-referrer"
-        onError={() => setBroken(true)}
-      />
-    );
-  }
   return (
-    <span className="avatar" style={{ background: av.color }}>
-      {av.initial}
-    </span>
+    <motion.span
+      className="av-wrap"
+      whileHover={{ scale: 1.22, rotate: -6 }}
+      transition={{ type: "spring", stiffness: 320, damping: 16 }}
+    >
+      {person.avatar_url && !broken ? (
+        <img
+          className="avatar"
+          src={person.avatar_url}
+          alt={person.name}
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          onError={() => setBroken(true)}
+        />
+      ) : (
+        <span className="avatar" style={{ background: av.color }}>
+          {av.initial}
+        </span>
+      )}
+    </motion.span>
   );
 }
+
+// Stagger only the first rows — with hundreds of people a full-table
+// stagger would feel sluggish instead of alive.
+const STAGGER_ROWS = 22;
 
 export function PeopleTable({
   people,
@@ -62,18 +73,23 @@ export function PeopleTable({
     <div className="panel people-panel">
       <div className="people-head">
         <div className="left">
-          <h2>נהגים</h2>
+          <h2>
+            <Users size={17} /> נהגים
+          </h2>
           <span className="idtag">
             {rows.length} מוצגים{anonCount ? ` · ${anonCount} אנונימיים` : ""}
           </span>
         </div>
         <div className="tools">
-          <input
-            className="search"
-            placeholder="חיפוש שם או מזהה…"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
+          <span className="search-wrap">
+            <Search size={14} />
+            <input
+              className="search"
+              placeholder="חיפוש שם או מזהה…"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+          </span>
           <label className="toggle">
             <input
               type="checkbox"
@@ -83,14 +99,20 @@ export function PeopleTable({
             הסתר אנונימיים
           </label>
           <a className="btn ghost sm" href={csvHref} download>
-            ⬇ ייצוא CSV
+            <Download size={14} /> ייצוא CSV
           </a>
         </div>
       </div>
 
       {rows.length === 0 ? (
         <div className="empty">
-          <div className="big">🗒️</div>
+          <motion.div
+            className="big"
+            animate={{ y: [0, -7, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <ClipboardList size={46} strokeWidth={1.3} />
+          </motion.div>
           אין אנשים עדיין — הריצו סריקה כדי למלא את הטבלה.
         </div>
       ) : (
@@ -104,9 +126,9 @@ export function PeopleTable({
               </tr>
             </thead>
             <tbody>
-              {rows.map((p) => {
-                return (
-                  <tr key={p.user_id}>
+              {rows.map((p, i) => {
+                const cell = (
+                  <>
                     <td>
                       <div className="name-cell">
                         <Avatar person={p} />
@@ -116,11 +138,23 @@ export function PeopleTable({
                     </td>
                     <td>
                       <a className="plink" href={p.profile_url} target="_blank" rel="noreferrer">
-                        פתח פרופיל ↗
+                        פתח פרופיל <ExternalLink size={12} />
                       </a>
                     </td>
                     <td className="idtag mono" dir="ltr">{p.user_id}</td>
-                  </tr>
+                  </>
+                );
+                return i < STAGGER_ROWS ? (
+                  <motion.tr
+                    key={p.user_id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03, type: "spring", stiffness: 240, damping: 24 }}
+                  >
+                    {cell}
+                  </motion.tr>
+                ) : (
+                  <tr key={p.user_id}>{cell}</tr>
                 );
               })}
             </tbody>

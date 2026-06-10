@@ -1,8 +1,14 @@
 {
   "project": "facebook-scraper",
-  "session_count": 1,
+  "session_count": 2,
   "last_session_started": "2026-06-10",
-  "last_session_ended": null,
+  "last_session_ended": "2026-06-10",
   "partners": ["Moti (Chimp 🐵)", "Claude (Champ 🥊)"],
-  "notes": "Session 1 — fresh project. No tools yet (indexer/connector). Not a git repo yet. Scaffolding starts here."
+  "notes": "Session 1 — empty folder to client-ready product in ONE session. R1: hardened Playwright scraper engine (resumable, exhaustion-aware) — 482 drivers verified on the live Israeli taxi-drivers group. Session auth solved by decrypting Moti's snap Chromium cookies (no password). R2: FastAPI + SQLite + live SSE jobs + CSV export, idempotent. R3: Vite/React dark-glass dashboard 'GroupHarvest' with live SSE panel, then fully localized to HEBREW + RTL for the Israeli client. 5 commits on master, github.com/MotiTheWizerd/facebook-groups-scrapper. Moti thrilled.",
+  "next": "Cross-reference DB hookup; scale (multi-account + proxy rotation + RQ/Redis); comment-expansion v2 (non-navigating, modal-safe); deploy/containerize. Also: drop a semantix.config.json in this dir so connector --notebook --write works (currently 422).",
+  "run": {
+    "backend": "cd backend && .venv/bin/python -m uvicorn app.main:app --port 8077",
+    "frontend": "cd frontend && npm run dev  (opens 5174 if 5173 busy)",
+    "rebuild_session": "backend/.venv/bin/python auth/cookies_to_session.py"
+  }
 }

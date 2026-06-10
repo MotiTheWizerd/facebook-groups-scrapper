@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import { Zap } from "lucide-react";
 import { subscribeJob, ProgressEvent } from "../api";
 import { AnimatedNumber } from "./AnimatedNumber";
 
@@ -17,11 +19,13 @@ export function LiveJob({
   const [index, setIndex] = useState(0);
   const [total, setTotal] = useState(0);
   const [status, setStatus] = useState("starting");
-  const [log, setLog] = useState<LogLine[]>([]);
   const logRef = useRef<HTMLDivElement>(null);
+  const lineId = useRef(0);
+  const [lines, setLines] = useState<(LogLine & { id: number })[]>([]);
 
   useEffect(() => {
-    const push = (l: LogLine) => setLog((p) => [...p.slice(-40), l]);
+    const push = (l: LogLine) =>
+      setLines((p) => [...p.slice(-40), { ...l, id: lineId.current++ }]);
     const stop = subscribeJob(
       jobId,
       (e: ProgressEvent) => {
@@ -57,8 +61,8 @@ export function LiveJob({
   }, [jobId, onDone]);
 
   useEffect(() => {
-    logRef.current?.scrollTo(0, logRef.current.scrollHeight);
-  }, [log]);
+    logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
+  }, [lines]);
 
   const pct = total ? Math.round((index / total) * 100) : 0;
   const finished = status === "done" || status === "error";
@@ -73,7 +77,14 @@ export function LiveJob({
     <div className="panel live">
       <div className="live-head">
         <div className="title">
-          ⚡ סורק את <span className="grad-text">{groupName}</span>
+          <motion.span
+            className="zap"
+            animate={finished ? { scale: 1 } : { scale: [1, 1.25, 1] }}
+            transition={{ duration: 1.1, repeat: finished ? 0 : Infinity, ease: "easeInOut" }}
+          >
+            <Zap size={17} fill="currentColor" />
+          </motion.span>
+          סורק את <span className="grad-text">{groupName}</span>
         </div>
         <div className="badge-live">
           <span className="dot live" />
@@ -82,14 +93,18 @@ export function LiveJob({
       </div>
 
       <div className="live-big">
-        <span className="num">
+        <span className={`num ${finished ? "" : "hot"}`}>
           <AnimatedNumber value={count} />
         </span>
         <span className="num-label">אנשים נמצאו</span>
       </div>
 
       <div className="progress">
-        <span style={{ width: `${pct}%` }} />
+        <motion.span
+          className="bar"
+          animate={{ width: `${pct}%` }}
+          transition={{ type: "spring", stiffness: 70, damping: 18 }}
+        />
       </div>
       <div className="progress-meta">
         <span>
@@ -99,11 +114,17 @@ export function LiveJob({
       </div>
 
       <div className="eventlog" ref={logRef}>
-        {log.map((l, i) => (
-          <div className={`row ${l.isNew ? "new" : ""}`} key={i}>
+        {lines.map((l) => (
+          <motion.div
+            className={`row ${l.isNew ? "new" : ""}`}
+            key={l.id}
+            initial={{ opacity: 0, x: 18 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ type: "spring", stiffness: 320, damping: 26 }}
+          >
             <span className="k mono">{l.k}</span>
             <span className="v">{l.v}</span>
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>

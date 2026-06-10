@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
+import { Link2, Plus } from "lucide-react";
 
 export function AddGroup({ onAdd }: { onAdd: (url: string, name?: string) => Promise<void> }) {
   const [url, setUrl] = useState("");
@@ -19,7 +21,9 @@ export function AddGroup({ onAdd }: { onAdd: (url: string, name?: string) => Pro
 
   return (
     <div className="panel add-row">
-      <span className="icon">🔗</span>
+      <span className="icon">
+        <Link2 size={19} />
+      </span>
       <input
         className="field"
         dir="ltr"
@@ -36,9 +40,15 @@ export function AddGroup({ onAdd }: { onAdd: (url: string, name?: string) => Pro
         onChange={(e) => setName(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && submit()}
       />
-      <button className="btn" onClick={submit} disabled={busy || !url.trim()}>
-        {busy ? "מוסיף…" : "+ הוספת קבוצה"}
-      </button>
+      <motion.button
+        className="btn"
+        onClick={submit}
+        disabled={busy || !url.trim()}
+        whileTap={{ scale: 0.95 }}
+      >
+        <Plus size={16} />
+        {busy ? "מוסיף…" : "הוספת קבוצה"}
+      </motion.button>
     </div>
   );
 }
