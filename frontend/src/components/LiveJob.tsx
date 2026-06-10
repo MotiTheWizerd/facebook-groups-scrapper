@@ -28,26 +28,26 @@ export function LiveJob({
         switch (e.event) {
           case "status":
             setStatus(e.status);
-            if (e.status === "running") push({ k: "start", v: "scraping…" });
+            if (e.status === "running") push({ k: "התחלה", v: "סורק…" });
             break;
           case "navigating":
-            push({ k: "open", v: "loading group page" });
+            push({ k: "טעינה", v: "טוען את עמוד הקבוצה" });
             break;
           case "scroll":
             setCount(e.count);
             setIndex(e.index);
             setTotal(e.total);
             if (e.new > 0)
-              push({ k: `#${e.index}`, v: `+${e.new} new → ${e.count}`, isNew: true });
+              push({ k: `#${e.index}`, v: `+${e.new} חדשים ← ${e.count}`, isNew: true });
             break;
           case "saved":
-            push({ k: "save", v: `checkpoint ${e.count}` });
+            push({ k: "שמירה", v: `נקודת שמירה ${e.count}` });
             break;
           case "persisted":
-            push({ k: "db", v: `saved ${e.found} (+${e.new_in_group} new to group)` });
+            push({ k: "מסד", v: `נשמרו ${e.found} (+${e.new_in_group} חדשים לקבוצה)` });
             break;
           case "done":
-            push({ k: "done", v: `${e.count} people · ${e.reason}` });
+            push({ k: "סיום", v: `${e.count} אנשים · ${e.reason}` });
             break;
         }
       },
@@ -62,16 +62,22 @@ export function LiveJob({
 
   const pct = total ? Math.round((index / total) * 100) : 0;
   const finished = status === "done" || status === "error";
+  const statusLabel: Record<string, string> = {
+    running: "רץ",
+    done: "הושלם",
+    error: "שגיאה",
+    starting: "מתחיל",
+  };
 
   return (
     <div className="panel live">
       <div className="live-head">
         <div className="title">
-          ⚡ Scraping <span className="grad-text">{groupName}</span>
+          ⚡ סורק את <span className="grad-text">{groupName}</span>
         </div>
         <div className="badge-live">
           <span className="dot live" />
-          {finished ? status : "live"}
+          {finished ? statusLabel[status] ?? status : "חי"}
         </div>
       </div>
 
@@ -79,7 +85,7 @@ export function LiveJob({
         <span className="num">
           <AnimatedNumber value={count} />
         </span>
-        <span className="num-label">people found</span>
+        <span className="num-label">אנשים נמצאו</span>
       </div>
 
       <div className="progress">
@@ -87,7 +93,7 @@ export function LiveJob({
       </div>
       <div className="progress-meta">
         <span>
-          scroll {index} / {total}
+          גלילה {index} / {total}
         </span>
         <span>{pct}%</span>
       </div>

@@ -23,7 +23,7 @@
 html, body, #root { height: 100%; }
 body {
   margin: 0;
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-family: "Heebo", "Inter", system-ui, -apple-system, sans-serif;
   color: var(--text);
   background:
     radial-gradient(900px 600px at 12% -8%, rgba(124, 92, 255, 0.20), transparent 60%),
@@ -83,12 +83,12 @@ body {
 .stat { padding: 20px 22px; position: relative; overflow: hidden; }
 .stat .label { font-size: 12.5px; color: var(--muted); font-weight: 600; }
 .stat .value { font-size: 38px; font-weight: 900; letter-spacing: -0.03em; margin-top: 6px; line-height: 1; }
-.stat .spark { position: absolute; right: -10px; bottom: -10px; font-size: 78px; opacity: 0.07; }
+.stat .spark { position: absolute; inset-inline-end: -10px; bottom: -10px; font-size: 78px; opacity: 0.07; }
 .stat.accent .value { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 
 /* ---------- add group ---------- */
 .add-row { display: flex; gap: 12px; padding: 18px; align-items: center; margin-bottom: 22px; }
-.add-row .icon { font-size: 20px; padding-left: 6px; }
+.add-row .icon { font-size: 20px; padding-inline-start: 6px; }
 input.field {
   flex: 1; background: rgba(7, 10, 20, 0.6); border: 1px solid var(--border-strong);
   color: var(--text); border-radius: 12px; padding: 13px 16px; font-size: 14.5px;
@@ -129,7 +129,7 @@ input.field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,
 .gcard .gname { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
 .gcard .gmeta { font-size: 12px; color: var(--muted); display: flex; gap: 10px; align-items: center; }
 .gcard .count-badge {
-  position: absolute; top: 14px; right: 14px; font-size: 12.5px; font-weight: 800;
+  position: absolute; top: 14px; inset-inline-end: 14px; font-size: 12.5px; font-weight: 800;
   background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
 }
 
@@ -180,7 +180,7 @@ input.field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,
 
 table { width: 100%; border-collapse: collapse; }
 thead th {
-  text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+  text-align: start; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
   color: var(--muted); font-weight: 700; padding: 12px 20px; position: sticky; top: 0;
   background: var(--panel-solid);
 }

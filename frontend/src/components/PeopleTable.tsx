@@ -38,15 +38,15 @@ export function PeopleTable({
     <div className="panel people-panel">
       <div className="people-head">
         <div className="left">
-          <h2>Drivers</h2>
+          <h2>נהגים</h2>
           <span className="idtag">
-            {rows.length} shown{anonCount ? ` · ${anonCount} anonymous` : ""}
+            {rows.length} מוצגים{anonCount ? ` · ${anonCount} אנונימיים` : ""}
           </span>
         </div>
         <div className="tools">
           <input
             className="search"
-            placeholder="Search name or id…"
+            placeholder="חיפוש שם או מזהה…"
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
@@ -56,10 +56,10 @@ export function PeopleTable({
               checked={hideAnon}
               onChange={(e) => setHideAnon(e.target.checked)}
             />
-            Hide anonymous
+            הסתר אנונימיים
           </label>
           <a className="btn ghost sm" href={csvHref} download>
-            ⬇ CSV
+            ⬇ ייצוא CSV
           </a>
         </div>
       </div>
@@ -67,16 +67,16 @@ export function PeopleTable({
       {rows.length === 0 ? (
         <div className="empty">
           <div className="big">🗒️</div>
-          No people yet — run a scrape to fill this up.
+          אין אנשים עדיין — הריצו סריקה כדי למלא את הטבלה.
         </div>
       ) : (
         <div className="tbody-wrap">
           <table>
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Profile</th>
-                <th>Facebook ID</th>
+                <th>שם</th>
+                <th>פרופיל</th>
+                <th>מזהה פייסבוק</th>
               </tr>
             </thead>
             <tbody>
@@ -90,15 +90,15 @@ export function PeopleTable({
                           {av.initial}
                         </span>
                         <span dir="auto">{p.name}</span>
-                        {p.is_anonymous ? <span className="anon-tag">anon</span> : null}
+                        {p.is_anonymous ? <span className="anon-tag">אנונימי</span> : null}
                       </div>
                     </td>
                     <td>
                       <a className="plink" href={p.profile_url} target="_blank" rel="noreferrer">
-                        open profile ↗
+                        פתח פרופיל ↗
                       </a>
                     </td>
-                    <td className="idtag mono">{p.user_id}</td>
+                    <td className="idtag mono" dir="ltr">{p.user_id}</td>
                   </tr>
                 );
               })}

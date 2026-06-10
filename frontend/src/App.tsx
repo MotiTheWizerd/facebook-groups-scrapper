@@ -40,7 +40,7 @@ export default function App() {
     const g = await api.addGroup(url, name);
     await refreshGroups();
     setSelected(g.id);
-    flash(`Added "${g.name || g.fb_group_id}"`);
+    flash(`הקבוצה "${g.name || g.fb_group_id}" נוספה`);
   };
 
   const runScrape = async () => {
@@ -52,7 +52,7 @@ export default function App() {
   const onJobDone = useCallback(async () => {
     await refreshGroups();
     if (selected != null) await loadPeople(selected);
-    flash("Scrape complete ✓");
+    flash("הסריקה הושלמה ✓");
     setTimeout(() => setActiveJob(null), 4000);
   }, [refreshGroups, loadPeople, selected]);
 
@@ -68,31 +68,31 @@ export default function App() {
             <h1>
               Group<span className="grad-text">Harvest</span>
             </h1>
-            <p>Facebook group people scraper · live dashboard</p>
+            <p>סורק חברי קבוצות פייסבוק · לוח בקרה חי</p>
           </div>
         </div>
         <div className="pill">
-          <span className="dot" /> backend connected
+          <span className="dot" /> השרת מחובר
         </div>
       </div>
 
       <div className="stats">
         <div className="panel stat">
-          <div className="label">Groups tracked</div>
+          <div className="label">קבוצות במעקב</div>
           <div className="value">
             <AnimatedNumber value={groups.length} />
           </div>
           <div className="spark">📁</div>
         </div>
         <div className="panel stat accent">
-          <div className="label">People in pool</div>
+          <div className="label">אנשים במאגר</div>
           <div className="value">
             <AnimatedNumber value={totalPeople} />
           </div>
           <div className="spark">👥</div>
         </div>
         <div className="panel stat">
-          <div className="label">Selected group</div>
+          <div className="label">הקבוצה הנבחרת</div>
           <div className="value">
             <AnimatedNumber value={selectedGroup?.people_count ?? 0} />
           </div>
@@ -104,9 +104,9 @@ export default function App() {
 
       <div className="grid">
         <div className="panel groups">
-          <div className="section-title">Groups</div>
+          <div className="section-title">קבוצות</div>
           {groups.length === 0 && (
-            <div className="idtag">No groups yet — add one above ↑</div>
+            <div className="idtag">אין קבוצות עדיין — הוסיפו אחת למעלה ↑</div>
           )}
           {groups.map((g) => (
             <div
@@ -115,10 +115,10 @@ export default function App() {
               onClick={() => setSelected(g.id)}
             >
               <div className="gname" dir="auto">
-                {g.name || `Group ${g.fb_group_id}`}
+                {g.name || `קבוצה ${g.fb_group_id}`}
               </div>
               <div className="gmeta">
-                <span className="mono">id {g.fb_group_id}</span>
+                <span className="mono">מזהה {g.fb_group_id}</span>
               </div>
               <div className="count-badge">{g.people_count}</div>
             </div>
@@ -130,9 +130,9 @@ export default function App() {
             <span className="icon">⚙️</span>
             <span style={{ color: "var(--muted)", fontSize: 14, flex: 1 }}>
               {selectedGroup
-                ? `Scrape "${selectedGroup.name || selectedGroup.fb_group_id}" — `
-                : "Select a group to scrape — "}
-              depth
+                ? `סריקת "${selectedGroup.name || selectedGroup.fb_group_id}" — `
+                : "בחרו קבוצה לסריקה — "}
+              עומק
             </span>
             <input
               className="scrolls-input mono"
@@ -142,20 +142,20 @@ export default function App() {
               value={scrolls}
               onChange={(e) => setScrolls(Number(e.target.value))}
             />
-            <span style={{ color: "var(--muted)", fontSize: 13 }}>scrolls</span>
+            <span style={{ color: "var(--muted)", fontSize: 13 }}>גלילות</span>
             <button
               className="btn"
               onClick={runScrape}
               disabled={selected == null || activeJob != null}
             >
-              {activeJob ? "Scraping…" : "▶ Start scrape"}
+              {activeJob ? "סורק…" : "▶ התחל סריקה"}
             </button>
           </div>
 
           {activeJob && (
             <LiveJob
               jobId={activeJob.id}
-              groupName={selectedGroup?.name || `Group ${selectedGroup?.fb_group_id}`}
+              groupName={selectedGroup?.name || `קבוצה ${selectedGroup?.fb_group_id}`}
               onDone={onJobDone}
             />
           )}

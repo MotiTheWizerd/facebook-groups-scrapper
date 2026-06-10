@@ -22,7 +22,8 @@ export function AddGroup({ onAdd }: { onAdd: (url: string, name?: string) => Pro
       <span className="icon">🔗</span>
       <input
         className="field"
-        placeholder="Paste a public Facebook group URL…"
+        dir="ltr"
+        placeholder="הדביקו קישור לקבוצת פייסבוק ציבורית…"
         value={url}
         onChange={(e) => setUrl(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && submit()}
@@ -30,13 +31,13 @@ export function AddGroup({ onAdd }: { onAdd: (url: string, name?: string) => Pro
       <input
         className="field"
         style={{ flex: "0 0 200px" }}
-        placeholder="Label (optional)"
+        placeholder="תווית (רשות)"
         value={name}
         onChange={(e) => setName(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && submit()}
       />
       <button className="btn" onClick={submit} disabled={busy || !url.trim()}>
-        {busy ? "Adding…" : "+ Add group"}
+        {busy ? "מוסיף…" : "+ הוספת קבוצה"}
       </button>
     </div>
   );
