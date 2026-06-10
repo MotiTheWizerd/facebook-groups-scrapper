@@ -16,9 +16,11 @@ backend/output/*.png
 # Local database + per-group scrape data
 backend/data/
 
-# Node / frontend (later)
+# Node / frontend
 node_modules/
 dist/
+# Screenshots may contain real personal data — keep out of git
+frontend/shots/
 
 # OS
 .DS_Store
