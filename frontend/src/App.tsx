@@ -11,7 +11,7 @@ import {
   Settings2,
   Users,
 } from "lucide-react";
-import { api, Group, Person } from "./api";
+import { api, Group } from "./api";
 import { AddGroup } from "./components/AddGroup";
 import { LiveJob } from "./components/LiveJob";
 import { PeopleTable } from "./components/PeopleTable";
@@ -45,7 +45,7 @@ const rise: Variants = {
 export default function App() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
-  const [people, setPeople] = useState<Person[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [activeJob, setActiveJob] = useState<{ id: string; group: number } | null>(null);
   const [scrolls, setScrolls] = useState(60);
   const [toast, setToast] = useState<string | null>(null);
@@ -61,17 +61,9 @@ export default function App() {
     setSelected((cur) => cur ?? (g[0]?.id ?? null));
   }, []);
 
-  const loadPeople = useCallback(async (gid: number) => {
-    setPeople(await api.listPeople(gid, true));
-  }, []);
-
   useEffect(() => {
     refreshGroups();
   }, [refreshGroups]);
-
-  useEffect(() => {
-    if (selected != null) loadPeople(selected);
-  }, [selected, loadPeople]);
 
   const addGroup = async (url: string, name?: string) => {
     const g = await api.addGroup(url, name);
@@ -88,11 +80,11 @@ export default function App() {
 
   const onJobDone = useCallback(async () => {
     await refreshGroups();
-    if (selected != null) await loadPeople(selected);
+    setRefreshKey((k) => k + 1);
     celebrate();
     flash("הסריקה הושלמה ✓");
     setTimeout(() => setActiveJob(null), 4000);
-  }, [refreshGroups, loadPeople, selected]);
+  }, [refreshGroups]);
 
   const selectedGroup = groups.find((g) => g.id === selected) || null;
   const totalPeople = groups.reduce((s, g) => s + g.people_count, 0);
@@ -264,7 +256,8 @@ export default function App() {
             </AnimatePresence>
 
             <PeopleTable
-              people={people}
+              groupId={selected}
+              refreshKey={refreshKey}
               csvHref={selected != null ? api.csvUrl(selected, true) : "#"}
             />
           </div>

@@ -331,6 +331,37 @@ a.plink {
 }
 a.plink:hover { text-decoration: underline; }
 
+/* ---------- pagination ---------- */
+.table-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 20px; border-top: 1px solid var(--border); flex-wrap: wrap; gap: 10px;
+}
+.pager { display: flex; align-items: center; gap: 4px; }
+.pg-btn {
+  position: relative; min-width: 32px; height: 32px; padding: 0 7px;
+  display: grid; place-items: center; border-radius: 9px; cursor: pointer;
+  background: transparent; border: 1px solid transparent; color: var(--muted);
+  font-size: 12.5px; font-weight: 600; transition: color 0.15s, border-color 0.15s;
+}
+.pg-btn:hover:not(:disabled):not(.current) { color: var(--text); border-color: var(--border-strong); }
+.pg-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.pg-btn.nav { border: 1px solid var(--border); background: rgba(7, 10, 20, 0.4); }
+.pg-btn.current { color: #fff; }
+.pg-pill {
+  position: absolute; inset: 0; border-radius: 9px; background: var(--grad);
+  box-shadow: 0 6px 18px -6px rgba(124, 92, 255, 0.7);
+}
+.pg-num { position: relative; z-index: 1; }
+.pg-ellipsis { color: var(--muted-2); padding: 0 4px; font-size: 12px; }
+
+select.per-page {
+  background: rgba(7, 10, 20, 0.6); border: 1px solid var(--border-strong);
+  color: var(--text); border-radius: 10px; padding: 8px 10px; font-size: 12.5px;
+  outline: none; cursor: pointer;
+}
+select.per-page:focus { border-color: var(--accent); }
+select.per-page option { background: var(--panel-solid); }
+
 .empty { padding: 60px 20px; text-align: center; color: var(--muted); }
 .empty .big { display: grid; place-items: center; margin-bottom: 14px; color: var(--muted-2); }
 

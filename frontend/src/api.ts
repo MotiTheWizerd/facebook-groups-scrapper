@@ -20,6 +20,15 @@ export interface Person {
   last_seen: number;
 }
 
+export interface PeoplePage {
+  items: Person[];
+  total: number;
+  anon_count: number;
+  page: number;
+  per_page: number;
+  pages: number;
+}
+
 export interface Job {
   id: string;
   group_id: number;
@@ -64,8 +73,18 @@ export const api = {
   addGroup: (url: string, name?: string) =>
     fetch("/api/groups", { method: "POST", headers: J, body: JSON.stringify({ url, name }) })
       .then((r) => r.json() as Promise<Group>),
-  listPeople: (groupId: number, includeAnon: boolean) =>
-    jget<Person[]>(`/api/groups/${groupId}/people?include_anon=${includeAnon}`),
+  listPeople: (
+    groupId: number,
+    opts: { includeAnon?: boolean; q?: string; page?: number; perPage?: number } = {}
+  ) => {
+    const p = new URLSearchParams({
+      include_anon: String(opts.includeAnon ?? true),
+      q: opts.q ?? "",
+      page: String(opts.page ?? 1),
+      per_page: String(opts.perPage ?? 50),
+    });
+    return jget<PeoplePage>(`/api/groups/${groupId}/people?${p}`);
+  },
   startScrape: (groupId: number, scrolls: number) =>
     fetch("/api/scrape", {
       method: "POST",

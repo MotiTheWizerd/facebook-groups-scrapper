@@ -5,7 +5,7 @@ Endpoints (all under /api):
   GET  /health
   POST /groups                 {url, name?}          -> register a group
   GET  /groups                                       -> list groups + people counts
-  GET  /groups/{id}/people     ?include_anon=        -> people in a group
+  GET  /groups/{id}/people     ?include_anon=&q=&page=&per_page= -> paged people
   GET  /groups/{id}/people.csv                       -> CSV download
   POST /scrape                 {group_id, scrolls?}  -> start a scrape job
   GET  /jobs                                         -> recent jobs
@@ -84,10 +84,12 @@ def get_groups():
 
 
 @app.get("/api/groups/{group_id}/people")
-def group_people(group_id: int, include_anon: bool = True):
+def group_people(group_id: int, include_anon: bool = True, q: str = "",
+                 page: int = 1, per_page: int = 50):
     if not db.get_group(group_id):
         raise HTTPException(404, "group not found")
-    return db.list_people(group_id, include_anon=include_anon)
+    return db.list_people_page(group_id, include_anon=include_anon, q=q,
+                               page=page, per_page=per_page)
 
 
 @app.get("/api/groups/{group_id}/people.csv")

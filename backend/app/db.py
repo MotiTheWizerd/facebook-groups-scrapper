@@ -194,6 +194,55 @@ def list_people(group_id: int | None = None, include_anon: bool = True) -> list[
         con.close()
 
 
+def list_people_page(
+    group_id: int | None,
+    include_anon: bool = True,
+    q: str = "",
+    page: int = 1,
+    per_page: int = 50,
+) -> dict:
+    """Paged + searchable people listing. Search and filtering run in SQL so
+    groups with tens of thousands of members never travel over the wire whole."""
+    con = connect()
+    try:
+        params: list = []
+        if group_id is not None:
+            base = ("FROM people p JOIN group_people gp ON gp.person_id=p.id "
+                    "WHERE gp.group_id=?")
+            params.append(group_id)
+        else:
+            base = "FROM people p WHERE 1=1"
+        if not include_anon:
+            base += " AND p.is_anonymous=0"
+        if q:
+            base += " AND (p.name LIKE ? COLLATE NOCASE OR p.user_id LIKE ?)"
+            like = f"%{q}%"
+            params.extend([like, like])
+
+        total = con.execute(f"SELECT COUNT(*) {base}", params).fetchone()[0]
+        anon_count = con.execute(
+            f"SELECT COUNT(*) {base} AND p.is_anonymous=1", params
+        ).fetchone()[0]
+
+        per_page = max(1, min(per_page, 200))
+        pages = max(1, -(-total // per_page))  # ceil
+        page = max(1, min(page, pages))
+        rows = con.execute(
+            f"SELECT p.* {base} ORDER BY p.name COLLATE NOCASE LIMIT ? OFFSET ?",
+            [*params, per_page, (page - 1) * per_page],
+        ).fetchall()
+        return {
+            "items": [dict(r) for r in rows],
+            "total": total,
+            "anon_count": anon_count,
+            "page": page,
+            "per_page": per_page,
+            "pages": pages,
+        }
+    finally:
+        con.close()
+
+
 # ---------- jobs ----------
 
 def create_job(group_id: int, scrolls: int) -> str:
