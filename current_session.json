@@ -1,0 +1,8 @@
+{
+  "project": "facebook-scraper",
+  "session_count": 1,
+  "last_session_started": "2026-06-10",
+  "last_session_ended": null,
+  "partners": ["Moti (Chimp 🐵)", "Claude (Champ 🥊)"],
+  "notes": "Session 1 — fresh project. No tools yet (indexer/connector). Not a git repo yet. Scaffolding starts here."
+}

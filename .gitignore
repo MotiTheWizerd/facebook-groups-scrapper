@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+backend/.venv/
+.venv/
+
+# Secrets / session — NEVER commit FB cookies
+backend/auth/storage_state.json
+**/storage_state.json
+
+# Scraper output & debug artifacts
+backend/output/*.json
+backend/output/*.html
+backend/output/*.png
+
+# Node / frontend (later)
+node_modules/
+dist/
+
+# OS
+.DS_Store
