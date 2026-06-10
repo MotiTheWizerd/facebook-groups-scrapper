@@ -13,6 +13,9 @@ backend/output/*.json
 backend/output/*.html
 backend/output/*.png
 
+# Local database + per-group scrape data
+backend/data/
+
 # Node / frontend (later)
 node_modules/
 dist/
