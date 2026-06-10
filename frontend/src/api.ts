@@ -14,6 +14,7 @@ export interface Person {
   user_id: string;
   name: string;
   profile_url: string;
+  avatar_url: string;
   is_anonymous: number;
   first_seen: number;
   last_seen: number;

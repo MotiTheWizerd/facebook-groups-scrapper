@@ -60,7 +60,8 @@ class JobManager:
                 on_progress=job.push,
             )
             ppl = [
-                {"user_id": p.user_id, "name": p.name, "profile_url": p.profile_url}
+                {"user_id": p.user_id, "name": p.name, "profile_url": p.profile_url,
+                 "avatar_url": p.avatar_url}
                 for p in people
             ]
             new_links = db.upsert_people(group["id"], ppl)

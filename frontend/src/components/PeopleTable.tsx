@@ -14,6 +14,30 @@ function avatarFor(name: string) {
   return { color: AV_COLORS[h % AV_COLORS.length], initial: name.trim()[0]?.toUpperCase() || "?" };
 }
 
+// Shows the real FB photo; on load error (e.g. expired signed URL) it falls
+// back to the colored initial so the table never shows broken images.
+function Avatar({ person }: { person: Person }) {
+  const av = avatarFor(person.name);
+  const [broken, setBroken] = useState(false);
+  if (person.avatar_url && !broken) {
+    return (
+      <img
+        className="avatar"
+        src={person.avatar_url}
+        alt={person.name}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+        onError={() => setBroken(true)}
+      />
+    );
+  }
+  return (
+    <span className="avatar" style={{ background: av.color }}>
+      {av.initial}
+    </span>
+  );
+}
+
 export function PeopleTable({
   people,
   csvHref,
@@ -81,14 +105,11 @@ export function PeopleTable({
             </thead>
             <tbody>
               {rows.map((p) => {
-                const av = avatarFor(p.name);
                 return (
                   <tr key={p.user_id}>
                     <td>
                       <div className="name-cell">
-                        <span className="avatar" style={{ background: av.color }}>
-                          {av.initial}
-                        </span>
+                        <Avatar person={p} />
                         <span dir="auto">{p.name}</span>
                         {p.is_anonymous ? <span className="anon-tag">אנונימי</span> : null}
                       </div>

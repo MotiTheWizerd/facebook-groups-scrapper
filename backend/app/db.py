@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS people (
     user_id      TEXT UNIQUE NOT NULL,
     name         TEXT NOT NULL,
     profile_url  TEXT NOT NULL,
+    avatar_url   TEXT NOT NULL DEFAULT '',
     is_anonymous INTEGER NOT NULL DEFAULT 0,
     first_seen   REAL NOT NULL,
     last_seen    REAL NOT NULL
@@ -74,6 +75,10 @@ def init_db() -> None:
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     con = connect()
     con.executescript(_SCHEMA)
+    # Lightweight migration for DBs created before avatar_url existed.
+    cols = {r["name"] for r in con.execute("PRAGMA table_info(people)")}
+    if "avatar_url" not in cols:
+        con.execute("ALTER TABLE people ADD COLUMN avatar_url TEXT NOT NULL DEFAULT ''")
     con.commit()
     con.close()
 
@@ -139,13 +144,17 @@ def upsert_people(group_id: int, people: list[dict]) -> int:
     try:
         for p in people:
             anon = 1 if is_anonymous(p["name"]) else 0
+            avatar = p.get("avatar_url", "") or ""
             cur = con.execute(
-                "INSERT INTO people (user_id, name, profile_url, is_anonymous, "
-                "first_seen, last_seen) VALUES (?,?,?,?,?,?) "
+                "INSERT INTO people (user_id, name, profile_url, avatar_url, "
+                "is_anonymous, first_seen, last_seen) VALUES (?,?,?,?,?,?,?) "
                 "ON CONFLICT(user_id) DO UPDATE SET "
                 "  name=excluded.name, profile_url=excluded.profile_url, "
-                "  is_anonymous=excluded.is_anonymous, last_seen=excluded.last_seen",
-                (p["user_id"], p["name"], p["profile_url"], anon, now, now),
+                "  is_anonymous=excluded.is_anonymous, last_seen=excluded.last_seen, "
+                # keep an existing avatar if the new scrape didn't capture one
+                "  avatar_url=CASE WHEN excluded.avatar_url != '' "
+                "    THEN excluded.avatar_url ELSE people.avatar_url END",
+                (p["user_id"], p["name"], p["profile_url"], avatar, anon, now, now),
             )
             if cur.rowcount == 1 and cur.lastrowid:
                 # Could be insert or update; detect true insert via first_seen==last_seen.

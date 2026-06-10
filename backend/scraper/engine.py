@@ -52,11 +52,12 @@ _USER_RE = re.compile(r"/groups/\d+/user/(\d+)")
 _PROFILE_RE = re.compile(r"profile\.php\?id=(\d+)")
 
 
-@dataclass(frozen=True)
+@dataclass
 class Person:
     name: str
     profile_url: str
     user_id: str
+    avatar_url: str = ""
 
 
 def _user_key(href: str) -> tuple[str, str] | None:
@@ -83,13 +84,25 @@ def _looks_like_name(text: str) -> bool:
 
 
 def _harvest(page: Page) -> list[dict]:
-    """Pull every author-like anchor currently in the DOM."""
+    """Pull every author-like anchor currently in the DOM.
+
+    In a group each author has TWO links to their profile: one carrying the name
+    text, and a separate one wrapping the avatar image (empty text). We capture
+    both `text` and any `img` src so they can be merged by user id.
+    """
     return page.eval_on_selector_all(
         'a[href*="/user/"], a[href*="profile.php?id="]',
-        """els => els.map(a => ({
-            href: a.href,
-            text: (a.innerText || a.textContent || '').trim()
-        }))""",
+        """els => els.map(a => {
+            const im = a.querySelector('img');
+            const sv = a.querySelector('image');
+            const img = im ? im.src
+                : (sv ? (sv.getAttribute('xlink:href') || sv.getAttribute('href')) : '');
+            return {
+                href: a.href,
+                text: (a.innerText || a.textContent || '').trim(),
+                img: img || ''
+            };
+        })""",
     )
 
 
@@ -138,6 +151,7 @@ def scrape_group(
 
     out_path = _resolve_out(out)
     found: dict[str, Person] = _load_existing(out_path) if resume else {}
+    avatars: dict[str, str] = {p.user_id: p.avatar_url for p in found.values() if p.avatar_url}
     seed = len(found)
 
     def _emit(event: str, **data):
@@ -169,7 +183,17 @@ def scrape_group(
 
         for i in range(scrolls):
             before = len(found)
-            for raw in _harvest(page):
+            batch = _harvest(page)
+            # First pass: collect avatar image per user (from the photo anchor).
+            for raw in batch:
+                key = _user_key(raw["href"])
+                if not key or not raw.get("img"):
+                    continue
+                uid = key[0]
+                if uid not in avatars:
+                    avatars[uid] = raw["img"]
+            # Second pass: names (from the text anchor), attaching any avatar.
+            for raw in batch:
                 key = _user_key(raw["href"])
                 if not key:
                     continue
@@ -178,7 +202,12 @@ def scrape_group(
                 if not _looks_like_name(name):
                     continue
                 if uid not in found:
-                    found[uid] = Person(name=name, profile_url=url, user_id=uid)
+                    found[uid] = Person(name=name, profile_url=url, user_id=uid,
+                                        avatar_url=avatars.get(uid, ""))
+            # Backfill avatars discovered after a person was first seen.
+            for uid, per in found.items():
+                if not per.avatar_url and uid in avatars:
+                    per.avatar_url = avatars[uid]
 
             new = len(found) - before
             idle = idle + 1 if new == 0 else 0

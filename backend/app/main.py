@@ -57,9 +57,10 @@ class ScrapeIn(BaseModel):
 def _csv(people: list[dict], filename: str) -> Response:
     buf = io.StringIO()
     w = csv.writer(buf)
-    w.writerow(["name", "profile_url", "user_id", "is_anonymous"])
+    w.writerow(["name", "profile_url", "user_id", "is_anonymous", "avatar_url"])
     for p in people:
-        w.writerow([p["name"], p["profile_url"], p["user_id"], p["is_anonymous"]])
+        w.writerow([p["name"], p["profile_url"], p["user_id"], p["is_anonymous"],
+                    p.get("avatar_url", "")])
     return Response(
         content=buf.getvalue(),
         media_type="text/csv",
