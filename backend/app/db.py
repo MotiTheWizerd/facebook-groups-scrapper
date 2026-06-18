@@ -134,6 +134,26 @@ def list_groups() -> list[dict]:
         con.close()
 
 
+def delete_group(group_id: int) -> bool:
+    """Delete a group. CASCADE clears its group_people links + jobs; we then
+    sweep people left orphaned (in no group) and drop the cached JSON file."""
+    con = connect()
+    try:
+        cur = con.execute("DELETE FROM groups WHERE id=?", (group_id,))
+        if cur.rowcount == 0:
+            return False
+        con.execute(
+            "DELETE FROM people WHERE id NOT IN "
+            "(SELECT person_id FROM group_people)"
+        )
+        con.commit()
+    finally:
+        con.close()
+    cache = DB_PATH.parent / "groups" / f"group_{group_id}.json"
+    cache.unlink(missing_ok=True)
+    return True
+
+
 # ---------- people ----------
 
 def upsert_people(group_id: int, people: list[dict]) -> int:

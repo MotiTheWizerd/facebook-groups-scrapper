@@ -9,6 +9,8 @@ import {
   Play,
   Satellite,
   Settings2,
+  Square,
+  Trash2,
   Users,
 } from "lucide-react";
 import { api, Group } from "./api";
@@ -76,6 +78,22 @@ export default function App() {
     if (selected == null) return;
     const { job_id } = await api.startScrape(selected, scrolls);
     setActiveJob({ id: job_id, group: selected });
+  };
+
+  const stopScrape = async () => {
+    if (!activeJob) return;
+    await api.stopScrape(activeJob.id);
+    flash("עוצר את הסריקה…");
+  };
+
+  const deleteGroup = async (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm("למחוק את הקבוצה? כל האנשים שנאספו עבורה יוסרו.")) return;
+    await api.deleteGroup(id);
+    setSelected((cur) => (cur === id ? null : cur));
+    await refreshGroups();
+    setRefreshKey((k) => k + 1);
+    flash("הקבוצה נמחקה");
   };
 
   const onJobDone = useCallback(async () => {
@@ -201,6 +219,13 @@ export default function App() {
                   >
                     {g.people_count}
                   </motion.div>
+                  <button
+                    className="gdel"
+                    title="מחק קבוצה"
+                    onClick={(e) => deleteGroup(g.id, e)}
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -226,15 +251,26 @@ export default function App() {
                 onChange={(e) => setScrolls(Number(e.target.value))}
               />
               <span style={{ color: "var(--muted)", fontSize: 13 }}>גלילות</span>
-              <motion.button
-                className="btn"
-                onClick={runScrape}
-                disabled={selected == null || activeJob != null}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Play size={15} fill="currentColor" />
-                {activeJob ? "סורק…" : "התחל סריקה"}
-              </motion.button>
+              {activeJob ? (
+                <motion.button
+                  className="btn stop"
+                  onClick={stopScrape}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Square size={14} fill="currentColor" />
+                  עצור סריקה
+                </motion.button>
+              ) : (
+                <motion.button
+                  className="btn"
+                  onClick={runScrape}
+                  disabled={selected == null}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Play size={15} fill="currentColor" />
+                  התחל סריקה
+                </motion.button>
+              )}
             </div>
 
             <AnimatePresence>

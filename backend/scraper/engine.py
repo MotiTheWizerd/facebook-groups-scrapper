@@ -143,6 +143,7 @@ def scrape_group(
     headless: bool = True,
     debug: bool = False,
     on_progress=None,
+    should_stop=None,
 ) -> list[Person]:
     if not AUTH_STATE.exists():
         raise FileNotFoundError(
@@ -157,6 +158,18 @@ def scrape_group(
     def _emit(event: str, **data):
         if on_progress:
             on_progress({"event": event, **data})
+
+    def _sleep(secs: float) -> bool:
+        """Sleep in small chunks so a stop request is honored within ~0.15s.
+        Returns True if a stop was requested during the sleep."""
+        slept = 0.0
+        while slept < secs:
+            if should_stop and should_stop():
+                return True
+            chunk = min(0.15, secs - slept)
+            time.sleep(chunk)
+            slept += chunk
+        return bool(should_stop and should_stop())
 
     if seed:
         _emit("resumed", count=seed, file=str(out_path))
@@ -182,6 +195,9 @@ def scrape_group(
         stop_reason = "scroll_cap"
 
         for i in range(scrolls):
+            if should_stop and should_stop():
+                stop_reason = "cancelled"
+                break
             before = len(found)
             batch = _harvest(page)
             # First pass: collect avatar image per user (from the photo anchor).
@@ -235,13 +251,17 @@ def scrape_group(
             # Scroll down; if the page has stalled, jiggle to coax a lazy load.
             page.mouse.wheel(0, random.randint(1600, 2800))
             if stall >= 2:
-                time.sleep(1.0)
+                if _sleep(1.0):
+                    stop_reason = "cancelled"; break
                 page.mouse.wheel(0, -400)
-                time.sleep(0.5)
+                if _sleep(0.5):
+                    stop_reason = "cancelled"; break
                 page.mouse.wheel(0, 1200)
-            time.sleep(random.uniform(1.2, 2.6))           # human-ish pacing
+            if _sleep(random.uniform(1.2, 2.6)):           # human-ish pacing
+                stop_reason = "cancelled"; break
             if (i + 1) % 25 == 0:                           # occasional breather
-                time.sleep(random.uniform(4.0, 7.0))
+                if _sleep(random.uniform(4.0, 7.0)):
+                    stop_reason = "cancelled"; break
 
         if debug:
             out_dir = pathlib.Path(__file__).resolve().parents[1] / "output"

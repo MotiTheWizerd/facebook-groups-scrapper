@@ -23,6 +23,7 @@ class Job:
         self.group_id = group_id
         self.events: list[dict] = []
         self.done = False
+        self.cancel_flag = threading.Event()
         self._lock = threading.Lock()
 
     def push(self, ev: dict) -> None:
@@ -50,6 +51,15 @@ class JobManager:
     def get(self, job_id: str) -> Job | None:
         return self.jobs.get(job_id)
 
+    def cancel(self, job_id: str) -> bool:
+        """Signal a running job to stop after its current scroll. Idempotent."""
+        job = self.jobs.get(job_id)
+        if not job or job.done:
+            return False
+        job.cancel_flag.set()
+        job.push({"event": "status", "status": "stopping"})
+        return True
+
     def _run(self, job: Job, group: dict, scrolls: int, resume: bool) -> None:
         db.update_job(job.id, status="running")
         job.push({"event": "status", "status": "running", "group_id": group["id"]})
@@ -57,7 +67,7 @@ class JobManager:
         try:
             people = scrape_group(
                 group["url"], scrolls=scrolls, out=str(out), resume=resume,
-                on_progress=job.push,
+                on_progress=job.push, should_stop=job.cancel_flag.is_set,
             )
             ppl = [
                 {"user_id": p.user_id, "name": p.name, "profile_url": p.profile_url,

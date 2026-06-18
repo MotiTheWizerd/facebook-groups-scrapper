@@ -91,6 +91,13 @@ export const api = {
       headers: J,
       body: JSON.stringify({ group_id: groupId, scrolls, resume: true }),
     }).then((r) => r.json() as Promise<{ job_id: string }>),
+  stopScrape: (jobId: string) =>
+    fetch(`/api/jobs/${jobId}/stop`, { method: "POST" }).then((r) => r.json()),
+  deleteGroup: (groupId: number) =>
+    fetch(`/api/groups/${groupId}`, { method: "DELETE" }).then((r) => {
+      if (!r.ok) throw new Error(`${r.status}`);
+      return r.json();
+    }),
   csvUrl: (groupId: number, includeAnon: boolean) =>
     `/api/groups/${groupId}/people.csv?include_anon=${includeAnon}`,
 };

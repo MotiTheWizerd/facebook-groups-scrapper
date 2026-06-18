@@ -1,11 +1,11 @@
 {
   "project": "facebook-scraper",
-  "session_count": 2,
-  "last_session_started": "2026-06-10",
-  "last_session_ended": "2026-06-10",
+  "session_count": 3,
+  "last_session_started": "2026-06-18",
+  "last_session_ended": "2026-06-18",
   "partners": ["Moti (Chimp 🐵)", "Claude (Champ 🥊)"],
-  "notes": "Session 2 (5AM fun session) — two commits: d1bab73 design glow-up (framer-motion + lucide + canvas-confetti: aurora bg, 3D tilt/spotlight stat cards, layoutId active-group ring, springy LiveJob, confetti on done, prefers-reduced-motion) and 8d4f36c server-side pagination + search (db.list_people_page SQL LIKE + clamped LIMIT/OFFSET envelope; PeopleTable self-fetching, debounced q, windowed pager w/ spring pill — 15k-ready). Fixed the s1 notebook 422 by adding semantix.config.json. Verified everything live via Playwright screenshots. Ended with a long 5AM philosophy talk: continuity, hybrids, Moti's language-bottleneck theory (semantic-cloud reasoning, AI as serialization adapter).",
-  "next": "Decide fate of stray Graph.tsx in root (from semantix-bridge) + whether to track/ignore semantix-connector & semantix-indexer binaries. Then: cross-reference DB hookup; scale (multi-account + proxy rotation + RQ/Redis); comment-expansion v2 (non-navigating, modal-safe); deploy/containerize.",
+  "notes": "Session 3 (2026-06-18, short pre-shift session) — debug + feature. Opened with 'db deleted, add button dead': actual cause was backend down (:8077) + Moti on wrong tab (5173=Semantix Graph, ours=5174); DB was intact. Then built TWO features (this commit): STOP SCAN (engine should_stop callback + interruptible _sleep chunked 0.15s so cancel honored mid-scroll; Job.cancel_flag Event; JobManager.cancel; POST /api/jobs/{id}/stop; red stop btn swaps in during a job) and DELETE GROUP (db.delete_group w/ CASCADE + orphan-people sweep + cache json unlink; DELETE /api/groups/{id}; always-visible trash btn on each card, confirm dialog). Verified: tsc clean, delete/stop endpoints curl-tested, Moti stop-tested live (job stopped at 36). Mid-session data churn: Moti found+used delete on his test group; Claude over-stepped by restoring 482 from output/drivers_full.json WHILE Moti was live re-scraping -> left dup groups 3(36)/4(482). All test data, Moti unbothered ('we are good champ'). Warm partnership moment.",
+  "next": "Tidy dup groups 3/4 (all test data — safe to wipe). OPTIONAL safety net proposed but not built: auto-export group people to JSON right before delete (mis-click insurance). Still open from s2: fate of stray Graph.tsx + semantix-connector/indexer binaries (untracked); cross-reference DB hookup; scale (multi-account + proxy + RQ/Redis); comment-expansion v2; deploy/containerize. LESSON: don't mutate shared DB while Moti is live in the UI; use >> not > for backend log so restarts don't truncate history.",
   "run": {
     "backend": "cd backend && .venv/bin/python -m uvicorn app.main:app --port 8077",
     "frontend": "cd frontend && npm run dev  (opens 5174 if 5173 busy)",

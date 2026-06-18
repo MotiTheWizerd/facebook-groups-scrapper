@@ -83,6 +83,13 @@ def get_groups():
     return db.list_groups()
 
 
+@app.delete("/api/groups/{group_id}")
+def delete_group(group_id: int):
+    if not db.delete_group(group_id):
+        raise HTTPException(404, "group not found")
+    return {"ok": True, "deleted": group_id}
+
+
 @app.get("/api/groups/{group_id}/people")
 def group_people(group_id: int, include_anon: bool = True, q: str = "",
                  page: int = 1, per_page: int = 50):
@@ -107,6 +114,13 @@ def start_scrape(body: ScrapeIn):
         raise HTTPException(404, "group not found")
     job_id = manager.start_scrape(group, scrolls=body.scrolls, resume=body.resume)
     return {"job_id": job_id, "group_id": body.group_id, "status": "started"}
+
+
+@app.post("/api/jobs/{job_id}/stop")
+def stop_scrape(job_id: str):
+    if not manager.cancel(job_id):
+        raise HTTPException(404, "job not active (already finished or unknown)")
+    return {"ok": True, "job_id": job_id, "status": "stopping"}
 
 
 @app.get("/api/jobs")
